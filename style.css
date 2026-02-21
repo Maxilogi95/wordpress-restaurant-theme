@@ -1,0 +1,17 @@
+/*
+Theme Name:  Tisch by Kohler
+Theme URI:   https://github.com/kohler-dev/tisch-kohler
+Description: DSGVO-compliant WordPress restaurant theme. Zero external dependencies, self-hosted fonts, OpenStreetMap. By Maximilian Kohler.
+Version:     1.0.0
+Author:      Maximilian Kohler
+Author URI:  https://github.com/kohler-dev
+License:     GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: tisch-kohler
+Tags:        restaurant, dsgvo, german, classic-theme
+Requires at least: 6.4
+Tested up to: 6.7
+Requires PHP: 8.0
+*/
+
+@import url('assets/css/main.css');

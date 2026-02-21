@@ -1,0 +1,264 @@
+# Copyright (C) 2024 Maximilian Kohler
+# This file is distributed under the GPL-2.0-or-later.
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Tisch by Kohler 1.0.0\n"
+"Report-Msgid-Bugs-To: https://github.com/kohler-dev/tisch-kohler\n"
+"POT-Creation-Date: 2024-01-01T00:00:00+00:00\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2024-01-01T00:00:00+00:00\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"X-Generator: WP-CLI 2.x\n"
+"X-Domain: tisch-kohler\n"
+
+#. Theme Name of the theme/plugin
+msgid "Tisch by Kohler"
+msgstr ""
+
+#. Theme URI of the theme/plugin
+msgid "https://github.com/kohler-dev/tisch-kohler"
+msgstr ""
+
+#. Description of the theme/plugin
+msgid "DSGVO-compliant WordPress restaurant theme. Zero external dependencies, self-hosted fonts, OpenStreetMap. By Maximilian Kohler."
+msgstr ""
+
+#. Author of the theme/plugin
+msgid "Maximilian Kohler"
+msgstr ""
+
+#: header.php
+msgid "Zum Hauptinhalt springen"
+msgstr ""
+
+#: header.php
+msgid "Hauptnavigation"
+msgstr ""
+
+#: header.php
+msgid "Menü öffnen"
+msgstr ""
+
+#: footer.php
+msgid "Footer-Navigation"
+msgstr ""
+
+#: inc/theme-setup.php
+msgid "Über uns"
+msgstr ""
+
+#: page-templates/catering.php
+msgid "Interesse an Catering für Ihre Veranstaltung? Wir freuen uns auf Ihre Anfrage!"
+msgstr ""
+
+#: page-templates/catering.php
+msgid "Jetzt anfragen"
+msgstr ""
+
+#: page-templates/kontakt.php
+msgid "Adresse"
+msgstr ""
+
+#: page-templates/kontakt.php
+msgid "Telefon"
+msgstr ""
+
+#: page-templates/kontakt.php
+msgid "E-Mail"
+msgstr ""
+
+#: page-templates/kontakt.php
+msgid "Öffnungszeiten"
+msgstr ""
+
+#: template-parts/home/hero.php
+msgid "Hero-Bereich"
+msgstr ""
+
+#: template-parts/home/hero.php
+msgid "Tisch reservieren"
+msgstr ""
+
+#: template-parts/home/hero.php
+msgid "Zur Speisekarte"
+msgstr ""
+
+#: template-parts/home/opening-hours.php
+msgid "Öffnungszeiten"
+msgstr ""
+
+#: template-parts/home/opening-hours.php
+msgid "Reservierungen:"
+msgstr ""
+
+#: template-parts/home/tagesessen-teaser.php
+msgid "Aktuelle Wochenkarte"
+msgstr ""
+
+#: template-parts/home/tagesessen-teaser.php
+msgid "Unsere Wochenkarte"
+msgstr ""
+
+#: template-parts/home/tagesessen-teaser.php
+msgid "Die aktuelle Wochenkarte steht zum Ansehen und Herunterladen bereit."
+msgstr ""
+
+#: template-parts/home/tagesessen-teaser.php
+msgid "Die neue Wochenkarte ist in Kürze verfügbar."
+msgstr ""
+
+#: template-parts/home/tagesessen-teaser.php
+msgid "Zur Wochenkarte"
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "Gültig bis: %s"
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "PDF herunterladen"
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "Wochenkarte als PDF"
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "Ihr Browser kann das PDF nicht direkt anzeigen."
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "Wochenkarte herunterladen"
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "Die aktuelle Wochenkarte ist in Kürze verfügbar. Schauen Sie gerne bald wieder vorbei!"
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "Für aktuelle Informationen rufen Sie uns an:"
+msgstr ""
+
+#: template-parts/tagesessen/pdf-viewer.php
+msgid "Die Wochenkarte wird in Kürze hochgeladen."
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Vielen Dank für Ihre Anfrage! Wir werden uns so schnell wie möglich bei Ihnen melden."
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Es ist ein Fehler aufgetreten. Bitte überprüfen Sie Ihre Eingaben und versuchen Sie es erneut."
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Die E-Mail konnte leider nicht gesendet werden. Bitte rufen Sie uns an: %s"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Name"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "E-Mail-Adresse"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Telefon (optional)"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Wunschdatum"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Uhrzeit"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Bitte wählen"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Anzahl Personen"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Nachricht (optional)"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Ich habe die %1$sDatenschutzerklärung%2$s gelesen und bin damit einverstanden, dass meine Daten zur Bearbeitung dieser Anfrage verwendet werden."
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Anfrage senden"
+msgstr ""
+
+#: template-parts/reservierung/reservation-form.php
+msgid "Pflichtfelder"
+msgstr ""
+
+#: template-parts/kontakt/osm-map.php
+msgid "Standort auf OpenStreetMap"
+msgstr ""
+
+#: template-parts/kontakt/osm-map.php
+msgid "Kartendaten:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Neue Reservierungsanfrage von %s"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Neue Reservierungsanfrage:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Name:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "E-Mail:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Telefon:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Datum:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Uhrzeit:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Personen:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "Nachricht:"
+msgstr ""
+
+#: inc/reservation-form.php
+msgid "DSGVO-Zustimmung erteilt."
+msgstr ""
+
+#: 404.php
+msgid "Seite nicht gefunden"
+msgstr ""
+
+#: 404.php
+msgid "Die gesuchte Seite konnte leider nicht gefunden werden. Bitte nutzen Sie die Navigation oder kehren Sie zur Startseite zurück."
+msgstr ""
+
+#: 404.php
+msgid "Zur Startseite"
+msgstr ""

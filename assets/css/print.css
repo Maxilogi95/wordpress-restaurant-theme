@@ -1,0 +1,108 @@
+/* ============================================================
+   Tisch by Kohler — print.css
+   Print stylesheet for clean, ink-friendly output.
+   ============================================================ */
+
+@media print {
+
+  /* Hide navigation and decorative elements */
+  .site-header,
+  .site-nav,
+  .site-footer,
+  .hero__overlay,
+  .btn,
+  .pdf-viewer__header .btn,
+  .teaser-card__icon,
+  .osm-map,
+  .reservation-form-wrap,
+  .skip-link {
+    display: none !important;
+  }
+
+  body {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 12pt;
+    color: #000;
+    background: #fff;
+    margin: 0;
+  }
+
+  .container {
+    max-width: 100%;
+    padding: 0;
+    margin: 0;
+  }
+
+  .page-hero--simple {
+    background: none;
+    padding: 0;
+  }
+
+  .page-hero__title {
+    font-size: 24pt;
+    color: #000;
+    border-bottom: 2pt solid #000;
+    padding-bottom: 8pt;
+    margin-bottom: 16pt;
+  }
+
+  .section {
+    padding-block: 16pt;
+  }
+
+  /* Speisekarte */
+  .speisekarte {
+    column-count: 2;
+    column-gap: 24pt;
+  }
+
+  .speisekarte h2 {
+    column-span: all;
+    font-size: 16pt;
+    border-bottom: 1pt solid #000;
+    margin-bottom: 8pt;
+  }
+
+  /* Links */
+  a {
+    color: #000;
+    text-decoration: none;
+  }
+
+  a[href]::after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+    color: #555;
+  }
+
+  /* Don't expand these links */
+  a[href^="#"]::after,
+  a[href^="tel:"]::after,
+  a[href^="mailto:"]::after {
+    content: '';
+  }
+
+  /* Avoid page breaks inside key content */
+  h1, h2, h3, .kontakt-item, .hours-table__row {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Page footer */
+  .site-footer {
+    display: block !important;
+    background: none;
+    color: #000;
+    border-top: 1pt solid #999;
+    padding-top: 8pt;
+    font-size: 9pt;
+  }
+
+  .site-footer__list a {
+    color: #333;
+  }
+
+  .site-footer__copy {
+    color: #555;
+  }
+}
