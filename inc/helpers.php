@@ -21,16 +21,17 @@ function tisch_tagesessen_is_valid(): bool {
 
     $valid_until = get_option( 'tisch_tagesessen_valid_until', '' );
     if ( empty( $valid_until ) ) {
-        return true; // No expiry set — always valid
+        return true; // No expiry set — always valid.
     }
 
-    $expiry = \DateTimeImmutable::createFromFormat( 'Y-m-d', $valid_until );
-    if ( ! $expiry ) {
-        return true;
+    // Reject malformed values instead of falling through to "always valid".
+    if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $valid_until ) ) {
+        return false;
     }
 
-    $today = new \DateTimeImmutable( 'today' );
-    return $expiry >= $today;
+    // Compare date strings in the site's timezone (WordPress forces PHP to UTC).
+    $today = ( new \DateTimeImmutable( 'today', wp_timezone() ) )->format( 'Y-m-d' );
+    return $valid_until >= $today;
 }
 
 /**
@@ -146,16 +147,17 @@ function tisch_speisekarte_is_valid(): bool {
 
     $valid_until = get_option( 'tisch_speisekarte_valid_until', '' );
     if ( empty( $valid_until ) ) {
-        return true; // No expiry set — always valid
+        return true; // No expiry set — always valid.
     }
 
-    $expiry = \DateTimeImmutable::createFromFormat( 'Y-m-d', $valid_until );
-    if ( ! $expiry ) {
-        return true;
+    // Reject malformed values instead of falling through to "always valid".
+    if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $valid_until ) ) {
+        return false;
     }
 
-    $today = new \DateTimeImmutable( 'today' );
-    return $expiry >= $today;
+    // Compare date strings in the site's timezone (WordPress forces PHP to UTC).
+    $today = ( new \DateTimeImmutable( 'today', wp_timezone() ) )->format( 'Y-m-d' );
+    return $valid_until >= $today;
 }
 
 /**
