@@ -348,9 +348,47 @@
 					$item.find( '[data-item-field="price"]' ).val( item.price || '' );
 					$item.find( '[data-item-field="desc"]' ).val( item.desc  || '' );
 					$item.find( '[data-item-field="note"]' ).val( item.note  || '' );
+					$item.find( '[data-item-field="veg"]' ).prop( 'checked', !! item.veg );
+					$item.find( '[data-item-field="vegan"]' ).prop( 'checked', !! item.vegan );
+					$item.find( '[data-item-field="spicy"]' ).prop( 'checked', !! item.spicy );
+					if ( item.img_id && item.img_url ) {
+						$item.find( '[data-item-field="img_id"]' ).val( item.img_id );
+						$item.find( '.tisch-item-img-preview' ).attr( 'src', item.img_url ).show();
+						$item.find( '.tisch-item-img-remove' ).show();
+						$item.find( '.tisch-item-img-upload' ).text( 'Bild ändern' );
+					}
 				} );
 			}
 		} );
 	}
+
+	// ── Per-item image upload / remove ────────────────────────────────────────
+
+	$( '#speisekarte-sections' ).on( 'click', '.tisch-item-img-upload', function () {
+		var $btn  = $( this );
+		var $item = $btn.closest( '.tisch-menu-item' );
+		var frame = wp.media( {
+			title:    'Gericht-Bild',
+			button:   { text: 'Verwenden' },
+			multiple: false,
+			library:  { type: 'image' },
+		} );
+		frame.on( 'select', function () {
+			var att = frame.state().get( 'selection' ).first().toJSON();
+			$item.find( '[data-item-field="img_id"]' ).val( att.id );
+			$item.find( '.tisch-item-img-preview' ).attr( 'src', att.url ).show();
+			$item.find( '.tisch-item-img-remove' ).show();
+			$btn.text( 'Bild ändern' );
+		} );
+		frame.open();
+	} );
+
+	$( '#speisekarte-sections' ).on( 'click', '.tisch-item-img-remove', function () {
+		var $item = $( this ).closest( '.tisch-menu-item' );
+		$item.find( '[data-item-field="img_id"]' ).val( 0 );
+		$item.find( '.tisch-item-img-preview' ).attr( 'src', '' ).hide();
+		$( this ).hide();
+		$item.find( '.tisch-item-img-upload' ).text( 'Bild hochladen' );
+	} );
 
 } )( jQuery );

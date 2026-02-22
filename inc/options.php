@@ -97,10 +97,29 @@ function tisch_admin_enqueue( string $hook ): void {
         wp_get_theme()->get( 'Version' ),
         true
     );
+    // Enrich each item with a thumbnail URL for the admin preview.
+    $raw_sections = array_values( (array) get_option( 'tisch_speisekarte_sections', [] ) );
+    foreach ( $raw_sections as &$section ) {
+        if ( ! isset( $section['items'] ) || ! is_array( $section['items'] ) ) {
+            continue;
+        }
+        foreach ( $section['items'] as &$item ) {
+            $img_id = absint( $item['img_id'] ?? 0 );
+            if ( $img_id ) {
+                $src             = wp_get_attachment_image_src( $img_id, 'thumbnail' );
+                $item['img_url'] = $src ? $src[0] : '';
+            } else {
+                $item['img_url'] = '';
+            }
+        }
+        unset( $item );
+    }
+    unset( $section );
+
     wp_add_inline_script(
         'tisch-admin',
         'var tischAdminData = ' . wp_json_encode( [
-            'speisekarteData' => array_values( (array) get_option( 'tisch_speisekarte_sections', [] ) ),
+            'speisekarteData' => $raw_sections,
             'scheduleData'    => (object) get_option( 'tisch_hours_schedule', [] ),
             'specialData'     => array_values( (array) get_option( 'tisch_hours_special', [] ) ),
         ] ) . ';',
@@ -399,12 +418,26 @@ function tisch_render_settings_page(): void {
             </template>
 
             <template id="speisekarte-item-tpl">
-                <div class="tisch-menu-item" style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center">
-                    <input type="text" data-item-field="name"  placeholder="<?php esc_attr_e( 'Name des Gerichts *', 'tisch-kohler' ); ?>" class="regular-text">
-                    <input type="text" data-item-field="price" placeholder="<?php esc_attr_e( 'Preis, z.B. 12,50 €', 'tisch-kohler' ); ?>" style="width:100%">
-                    <input type="text" data-item-field="desc"  placeholder="<?php esc_attr_e( 'Beschreibung (optional)', 'tisch-kohler' ); ?>" class="regular-text">
-                    <input type="text" data-item-field="note"  placeholder="<?php esc_attr_e( 'Allergene (optional)', 'tisch-kohler' ); ?>" class="small-text">
-                    <button type="button" class="button tisch-remove-item">&times;</button>
+                <div class="tisch-menu-item" style="display:block;margin-bottom:8px;padding:6px;border:1px solid #eee;border-radius:3px">
+                    <div style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr auto;gap:6px;align-items:center">
+                        <input type="text" data-item-field="name"  placeholder="<?php esc_attr_e( 'Name des Gerichts *', 'tisch-kohler' ); ?>" class="regular-text">
+                        <input type="text" data-item-field="price" placeholder="<?php esc_attr_e( 'Preis, z.B. 12,50 €', 'tisch-kohler' ); ?>" style="width:100%">
+                        <input type="text" data-item-field="desc"  placeholder="<?php esc_attr_e( 'Beschreibung (optional)', 'tisch-kohler' ); ?>" class="regular-text">
+                        <input type="text" data-item-field="note"  placeholder="<?php esc_attr_e( 'Allergene (optional)', 'tisch-kohler' ); ?>" class="small-text">
+                        <button type="button" class="button tisch-remove-item">&times;</button>
+                    </div>
+                    <div style="display:flex;gap:16px;align-items:center;margin-top:6px;flex-wrap:wrap">
+                        <label><input type="checkbox" data-item-field="veg"   value="1"> <?php esc_html_e( 'Vegetarisch', 'tisch-kohler' ); ?></label>
+                        <label><input type="checkbox" data-item-field="vegan" value="1"> <?php esc_html_e( 'Vegan', 'tisch-kohler' ); ?></label>
+                        <label><input type="checkbox" data-item-field="spicy" value="1"> <?php esc_html_e( 'Scharf', 'tisch-kohler' ); ?></label>
+                        <span style="margin-left:auto;display:flex;gap:8px;align-items:center">
+                            <input type="hidden" data-item-field="img_id" value="0">
+                            <img class="tisch-item-img-preview" src="" alt=""
+                                 style="width:60px;height:40px;object-fit:cover;border-radius:3px;display:none">
+                            <button type="button" class="button tisch-item-img-upload"><?php esc_html_e( 'Bild hochladen', 'tisch-kohler' ); ?></button>
+                            <button type="button" class="button tisch-item-img-remove" style="display:none"><?php esc_html_e( 'Bild entfernen', 'tisch-kohler' ); ?></button>
+                        </span>
+                    </div>
                 </div>
             </template>
 

@@ -86,27 +86,50 @@ $valid_until          = get_option( 'tisch_speisekarte_valid_until', '' );
                                         continue;
                                     }
                                     ?>
-                                    <li class="menu-item">
-                                        <div class="menu-item__row">
-                                            <span class="menu-item__name">
-                                                <?php echo esc_html( $item['name'] ); ?>
-                                            </span>
-                                            <?php if ( ! empty( $item['price'] ) ) : ?>
-                                                <span class="menu-item__price">
-                                                    <?php echo esc_html( $item['price'] ); ?>
+                                    <?php
+                                    $has_img = ! empty( $item['img_id'] );
+                                    $li_class = $has_img ? 'menu-item has-img' : 'menu-item';
+                                    ?>
+                                    <li class="<?php echo esc_attr( $li_class ); ?>">
+                                        <?php if ( $has_img ) : ?>
+                                            <?php echo wp_get_attachment_image(
+                                                (int) $item['img_id'],
+                                                'tisch-thumb',
+                                                false,
+                                                [ 'class' => 'menu-item__img', 'loading' => 'lazy' ]
+                                            ); ?>
+                                        <?php endif; ?>
+                                        <div class="menu-item__body">
+                                            <div class="menu-item__row">
+                                                <span class="menu-item__name">
+                                                    <?php echo esc_html( $item['name'] ); ?>
                                                 </span>
+                                                <?php
+                                                $badges = [];
+                                                if ( ! empty( $item['veg'] ) )   $badges[] = '<span class="diet-badge diet-badge--veg" title="Vegetarisch">V</span>';
+                                                if ( ! empty( $item['vegan'] ) ) $badges[] = '<span class="diet-badge diet-badge--vegan" title="Vegan">VG</span>';
+                                                if ( ! empty( $item['spicy'] ) ) $badges[] = '<span class="diet-badge diet-badge--spicy" title="Scharf">&#x25CF;</span>';
+                                                if ( $badges ) {
+                                                    echo '<span class="diet-badges">' . implode( '', $badges ) . '</span>';
+                                                }
+                                                ?>
+                                                <?php if ( ! empty( $item['price'] ) ) : ?>
+                                                    <span class="menu-item__price">
+                                                        <?php echo esc_html( $item['price'] ); ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <?php if ( ! empty( $item['desc'] ) ) : ?>
+                                                <p class="menu-item__desc">
+                                                    <?php echo esc_html( $item['desc'] ); ?>
+                                                </p>
+                                            <?php endif; ?>
+                                            <?php if ( ! empty( $item['note'] ) ) : ?>
+                                                <p class="menu-item__note">
+                                                    <?php echo esc_html( $item['note'] ); ?>
+                                                </p>
                                             <?php endif; ?>
                                         </div>
-                                        <?php if ( ! empty( $item['desc'] ) ) : ?>
-                                            <p class="menu-item__desc">
-                                                <?php echo esc_html( $item['desc'] ); ?>
-                                            </p>
-                                        <?php endif; ?>
-                                        <?php if ( ! empty( $item['note'] ) ) : ?>
-                                            <p class="menu-item__note">
-                                                <?php echo esc_html( $item['note'] ); ?>
-                                            </p>
-                                        <?php endif; ?>
                                     </li>
                                 <?php endforeach; ?>
                             </ul>

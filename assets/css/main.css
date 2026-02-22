@@ -1192,6 +1192,57 @@ h1, h2, h3, h4, h5, h6 {
   margin: var(--space-1) 0 0;
 }
 
+/* ── Diet badges ─────────────────────────────────────────── */
+.diet-badges {
+  display: inline-flex;
+  gap: var(--space-1);
+  margin-left: var(--space-2);
+  vertical-align: middle;
+}
+
+.diet-badge {
+  font-size: var(--text-xs);
+  font-weight: 700;
+  font-family: var(--font-body);
+  padding: 0.1em 0.45em;
+  border-radius: var(--radius-full);
+  line-height: 1.4;
+}
+
+.diet-badge--veg   { background: #d4edda; color: #1a5c2a; }
+.diet-badge--vegan { background: #c3e6cb; color: #0f3d1b; }
+.diet-badge--spicy { background: #f8d7da; color: #842029; }
+
+/* ── Menu item image ─────────────────────────────────────── */
+.menu-item__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.menu-item__img {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-2);
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .menu-item.has-img {
+    display: grid;
+    grid-template-columns: 120px 1fr;
+    gap: var(--space-4);
+    align-items: start;
+  }
+
+  .menu-item.has-img .menu-item__img {
+    max-height: 100%;
+    height: 100%;
+    margin-bottom: 0;
+  }
+}
+
 /* ── 24. OSM Consent Overlay ───────────────────────────── */
 .osm-consent {
   display: flex;

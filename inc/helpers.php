@@ -324,10 +324,14 @@ function tisch_sanitize_speisekarte_sections( $raw ): array {
                 continue;
             }
             $s['items'][] = [
-                'name'  => sanitize_text_field( $item['name']  ?? '' ),
-                'price' => sanitize_text_field( $item['price'] ?? '' ),
-                'desc'  => sanitize_text_field( $item['desc']  ?? '' ),
-                'note'  => sanitize_text_field( $item['note']  ?? '' ),
+                'name'   => sanitize_text_field( $item['name']  ?? '' ),
+                'price'  => sanitize_text_field( $item['price'] ?? '' ),
+                'desc'   => sanitize_text_field( $item['desc']  ?? '' ),
+                'note'   => sanitize_text_field( $item['note']  ?? '' ),
+                'veg'    => ! empty( $item['veg'] )   ? 1 : 0,
+                'vegan'  => ! empty( $item['vegan'] ) ? 1 : 0,
+                'spicy'  => ! empty( $item['spicy'] ) ? 1 : 0,
+                'img_id' => absint( $item['img_id']   ?? 0 ),
             ];
         }
         // Only keep sections that have a title or at least one item
