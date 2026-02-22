@@ -127,14 +127,30 @@ Color options are additionally registered as Customizer settings (`type => 'opti
 | `tisch_phone` | string | `sanitize_text_field` | Kontakt & Adresse › Telefon |
 | `tisch_address` | string | `sanitize_text_field` | Kontakt & Adresse › Adresse (Footer) |
 
-### Opening Hours (per day)
-Pattern: `tisch_hours_{day}` and `tisch_hours_{day}_closed` where `{day}` ∈ {mon, tue, wed, thu, fri, sat, sun}
+### Opening Hours (structured schedule)
 
 | Key | Type | Sanitizer |
 |---|---|---|
-| `tisch_hours_{day}` | string (multiline) | `sanitize_textarea_field` |
-| `tisch_hours_{day}_closed` | string ('1' or '') | `sanitize_text_field` |
+| `tisch_hours_schedule` | array (keyed by day: mon–sun) | `tisch_sanitize_hours_schedule()` |
+| `tisch_hours_special` | array (list of special date entries) | `tisch_sanitize_hours_special()` |
 | `tisch_hours_note` | HTML string | `wp_kses_post` |
+
+`tisch_hours_schedule` structure:
+```php
+[
+  'mon' => ['closed' => false, 'slots' => [['open' => '11:30', 'close' => '14:00'], ...]],
+  'tue' => ['closed' => true,  'slots' => []],
+  // …wed thu fri sat sun
+]
+```
+
+`tisch_hours_special` structure:
+```php
+[
+  ['date' => '2024-12-31', 'label' => 'Silvester', 'closed' => false, 'slots' => [['open' => '12:00', 'close' => '15:00']]],
+  ['date' => '2024-12-24', 'label' => 'Heiligabend', 'closed' => true, 'slots' => []],
+]
+```
 
 ### Closing Periods (3 fixed slots)
 | Key | Type | Sanitizer |
@@ -201,9 +217,11 @@ All defined in `inc/helpers.php`.
 | `tisch_tagesessen_is_valid(): bool` | bool | True if Tagesessen PDF is set and `tisch_tagesessen_valid_until` has not passed |
 | `tisch_speisekarte_is_valid(): bool` | bool | True if Speisekarte PDF is set and `tisch_speisekarte_valid_until` has not passed |
 | `tisch_osm_embed_url(): string` | string | Builds OSM embed URL from `tisch_osm_lat` / `tisch_osm_lng` with 0.002° bbox |
-| `tisch_get_opening_hours(): array` | `array<int, array{label:string, hours:string, closed:bool}>` | Returns 7-element array (Mon–Sun) of structured opening hours |
+| `tisch_get_opening_hours(): array` | `array<int, array{label:string, closed:bool, slots:array}>` | Returns 7-element array (Mon–Sun); each element has `slots` key with `[open,close]` pairs |
 | `tisch_get_active_closing(): array` | `array{from:string, to:string, label:string}\|array{}` | Returns currently active closing period or empty array |
 | `tisch_output_color_overrides(): void` | void | Echoes inline `<style>` for color CSS vars; hooked to `wp_head` at priority 99 |
+| `tisch_sanitize_hours_schedule(mixed $raw): array` | array | Sanitizes weekly schedule array (keyed by day, with closed bool + slots) |
+| `tisch_sanitize_hours_special(mixed $raw): array` | array | Sanitizes Sonderöffnungszeiten list (date, label, closed, slots) |
 | `tisch_sanitize_speisekarte_sections(mixed $raw): array` | array | Sanitizes nested Speisekarte sections array from admin form |
 | `tisch_phone_link(): string` | string | Returns `tisch_phone` stripped to digits, `+`, `-` (safe for `tel:` URIs) |
 

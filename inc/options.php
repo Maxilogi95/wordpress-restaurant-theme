@@ -21,22 +21,10 @@ function tisch_register_settings(): void {
         'tisch_phone'   => [ 'sanitize_callback' => 'sanitize_text_field' ],
         'tisch_address' => [ 'sanitize_callback' => 'sanitize_text_field' ],
 
-        // Opening hours — per individual day
-        'tisch_hours_mon'        => [ 'sanitize_callback' => 'sanitize_textarea_field' ],
-        'tisch_hours_mon_closed' => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hours_tue'        => [ 'sanitize_callback' => 'sanitize_textarea_field' ],
-        'tisch_hours_tue_closed' => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hours_wed'        => [ 'sanitize_callback' => 'sanitize_textarea_field' ],
-        'tisch_hours_wed_closed' => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hours_thu'        => [ 'sanitize_callback' => 'sanitize_textarea_field' ],
-        'tisch_hours_thu_closed' => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hours_fri'        => [ 'sanitize_callback' => 'sanitize_textarea_field' ],
-        'tisch_hours_fri_closed' => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hours_sat'        => [ 'sanitize_callback' => 'sanitize_textarea_field' ],
-        'tisch_hours_sat_closed' => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hours_sun'        => [ 'sanitize_callback' => 'sanitize_textarea_field' ],
-        'tisch_hours_sun_closed' => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hours_note'       => [ 'sanitize_callback' => 'wp_kses_post' ],
+        // Opening hours — structured schedule + special dates
+        'tisch_hours_schedule' => [ 'sanitize_callback' => 'tisch_sanitize_hours_schedule' ],
+        'tisch_hours_special'  => [ 'sanitize_callback' => 'tisch_sanitize_hours_special' ],
+        'tisch_hours_note'     => [ 'sanitize_callback' => 'wp_kses_post' ],
 
         // Special closing periods (3 fixed slots)
         'tisch_closing_1_from'  => [ 'sanitize_callback' => 'sanitize_text_field' ],
@@ -113,6 +101,8 @@ function tisch_admin_enqueue( string $hook ): void {
         'tisch-admin',
         'var tischAdminData = ' . wp_json_encode( [
             'speisekarteData' => array_values( (array) get_option( 'tisch_speisekarte_sections', [] ) ),
+            'scheduleData'    => (object) get_option( 'tisch_hours_schedule', [] ),
+            'specialData'     => array_values( (array) get_option( 'tisch_hours_special', [] ) ),
         ] ) . ';',
         'before'
     );
@@ -151,51 +141,123 @@ function tisch_render_settings_page(): void {
 
             <!-- ── Öffnungszeiten ─────────────────────────── -->
             <h2><?php esc_html_e( 'Öffnungszeiten', 'tisch-kohler' ); ?></h2>
-            <table class="form-table" role="presentation">
-                <?php
-                $hours_days = [
-                    'mon' => __( 'Montag',     'tisch-kohler' ),
-                    'tue' => __( 'Dienstag',   'tisch-kohler' ),
-                    'wed' => __( 'Mittwoch',   'tisch-kohler' ),
-                    'thu' => __( 'Donnerstag', 'tisch-kohler' ),
-                    'fri' => __( 'Freitag',    'tisch-kohler' ),
-                    'sat' => __( 'Samstag',    'tisch-kohler' ),
-                    'sun' => __( 'Sonn- und Feiertag', 'tisch-kohler' ),
-                ];
-                foreach ( $hours_days as $day_key => $day_label ) :
-                    $opt_hours  = 'tisch_hours_' . $day_key;
-                    $opt_closed = 'tisch_hours_' . $day_key . '_closed';
-                    $is_closed  = (bool) get_option( $opt_closed, '' );
-                    ?>
-                    <tr>
-                        <th scope="row"><?php echo esc_html( $day_label ); ?></th>
-                        <td>
-                            <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:6px">
-                                <input type="checkbox"
-                                       id="<?php echo esc_attr( $opt_closed ); ?>"
-                                       name="<?php echo esc_attr( $opt_closed ); ?>"
-                                       value="1"
-                                       class="tisch-closed-cb"
-                                       data-target="<?php echo esc_attr( $opt_hours ); ?>"
-                                       <?php checked( $is_closed ); ?>>
-                                <?php esc_html_e( 'Ruhetag / Geschlossen', 'tisch-kohler' ); ?>
-                            </label><br>
-                            <textarea
-                                id="<?php echo esc_attr( $opt_hours ); ?>"
-                                name="<?php echo esc_attr( $opt_hours ); ?>"
-                                class="regular-text"
-                                rows="2"
-                                placeholder="z. B.&#10;11:30 – 14:00 Uhr&#10;17:30 – 22:00 Uhr"
-                                <?php echo $is_closed ? 'disabled' : ''; ?>
-                            ><?php echo esc_textarea( get_option( $opt_hours, '' ) ); ?></textarea>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
+            <p class="description" style="margin-bottom:1em">
+                <?php esc_html_e( 'Geben Sie die regulären Öffnungszeiten pro Wochentag ein. Mehrere Zeitfenster pro Tag sind möglich.', 'tisch-kohler' ); ?>
+            </p>
+
+            <template id="time-slot-tpl">
+                <div class="tisch-time-slot" style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <input type="time" data-slot-field="open" style="width:auto;min-width:110px">
+                    <span>–</span>
+                    <input type="time" data-slot-field="close" style="width:auto;min-width:110px">
+                    <span>Uhr</span>
+                    <button type="button" class="button tisch-remove-slot">&times;</button>
+                </div>
+            </template>
+
+            <?php
+            $schedule_opt = (array) get_option( 'tisch_hours_schedule', [] );
+            $hours_days   = [
+                'mon' => __( 'Montag',             'tisch-kohler' ),
+                'tue' => __( 'Dienstag',           'tisch-kohler' ),
+                'wed' => __( 'Mittwoch',           'tisch-kohler' ),
+                'thu' => __( 'Donnerstag',         'tisch-kohler' ),
+                'fri' => __( 'Freitag',            'tisch-kohler' ),
+                'sat' => __( 'Samstag',            'tisch-kohler' ),
+                'sun' => __( 'Sonn- und Feiertag', 'tisch-kohler' ),
+            ];
+            foreach ( $hours_days as $day_key => $day_label ) :
+                $day_data  = isset( $schedule_opt[ $day_key ] ) && is_array( $schedule_opt[ $day_key ] )
+                    ? $schedule_opt[ $day_key ] : [];
+                $is_closed = ! empty( $day_data['closed'] );
+            ?>
+            <div id="tisch-day-<?php echo esc_attr( $day_key ); ?>"
+                 class="tisch-day-block"
+                 style="border:1px solid #ddd;padding:12px;margin-bottom:8px;border-radius:4px;background:#fff">
+                <strong><?php echo esc_html( $day_label ); ?></strong>
+                <div style="margin-top:8px">
+                    <label style="display:inline-flex;align-items:center;gap:6px;margin-bottom:8px">
+                        <input type="checkbox"
+                               name="tisch_hours_schedule[<?php echo esc_attr( $day_key ); ?>][closed]"
+                               value="1"
+                               class="tisch-closed-cb"
+                               data-day="<?php echo esc_attr( $day_key ); ?>"
+                               <?php checked( $is_closed ); ?>>
+                        <?php esc_html_e( 'Ruhetag / Geschlossen', 'tisch-kohler' ); ?>
+                    </label>
+                    <div id="tisch-slots-<?php echo esc_attr( $day_key ); ?>"
+                         class="tisch-slots-container"<?php echo $is_closed ? ' style="display:none"' : ''; ?>>
+                        <!-- populated by JS from scheduleData -->
+                    </div>
+                    <button type="button"
+                            class="button tisch-add-slot"
+                            data-day="<?php echo esc_attr( $day_key ); ?>"
+                            <?php echo $is_closed ? 'style="display:none"' : ''; ?>>
+                        <?php esc_html_e( '+ Zeit hinzufügen', 'tisch-kohler' ); ?>
+                    </button>
+                </div>
+            </div>
+            <?php endforeach; ?>
+
+            <table class="form-table" role="presentation" style="margin-top:12px">
                 <tr>
                     <th scope="row"><label for="tisch_hours_note"><?php esc_html_e( 'Hinweis', 'tisch-kohler' ); ?></label></th>
                     <td><textarea id="tisch_hours_note" name="tisch_hours_note" class="large-text" rows="3"><?php echo esc_textarea( get_option( 'tisch_hours_note' ) ); ?></textarea></td>
                 </tr>
             </table>
+
+            <!-- ── Sonderöffnungszeiten ───────────────────── -->
+            <h2><?php esc_html_e( 'Sonderöffnungszeiten', 'tisch-kohler' ); ?></h2>
+            <p class="description" style="margin-bottom:1em">
+                <?php esc_html_e( 'Abweichende Öffnungszeiten für bestimmte Tage (z. B. Feiertage, Sonderveranstaltungen).', 'tisch-kohler' ); ?>
+            </p>
+
+            <template id="special-entry-tpl">
+                <div class="tisch-special-entry" style="border:1px solid #ddd;padding:12px;margin-bottom:12px;border-radius:4px;background:#fff">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+                        <label>
+                            <?php esc_html_e( 'Datum:', 'tisch-kohler' ); ?>
+                            <input type="date" data-special-field="date" style="margin-left:4px">
+                        </label>
+                        <label>
+                            <?php esc_html_e( 'Bezeichnung:', 'tisch-kohler' ); ?>
+                            <input type="text"
+                                   data-special-field="label"
+                                   placeholder="<?php esc_attr_e( 'z. B. Heiligabend', 'tisch-kohler' ); ?>"
+                                   class="regular-text"
+                                   style="margin-left:4px">
+                        </label>
+                        <label style="display:inline-flex;align-items:center;gap:4px">
+                            <input type="checkbox" data-special-field="closed" value="1" class="tisch-special-closed-cb">
+                            <?php esc_html_e( 'Geschlossen', 'tisch-kohler' ); ?>
+                        </label>
+                        <button type="button" class="button tisch-remove-special">
+                            <?php esc_html_e( 'Eintrag entfernen', 'tisch-kohler' ); ?>
+                        </button>
+                    </div>
+                    <div class="tisch-special-slots-container"></div>
+                    <button type="button" class="button tisch-add-special-slot" style="margin-top:6px">
+                        <?php esc_html_e( '+ Zeit hinzufügen', 'tisch-kohler' ); ?>
+                    </button>
+                </div>
+            </template>
+
+            <template id="special-slot-tpl">
+                <div class="tisch-special-slot" style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                    <input type="time" data-special-slot-field="open" style="width:auto;min-width:110px">
+                    <span>–</span>
+                    <input type="time" data-special-slot-field="close" style="width:auto;min-width:110px">
+                    <span>Uhr</span>
+                    <button type="button" class="button tisch-remove-special-slot">&times;</button>
+                </div>
+            </template>
+
+            <div id="tisch-special-entries" style="margin-bottom:12px"></div>
+            <button type="button" class="button button-primary" id="tisch-add-special">
+                <?php esc_html_e( '+ Sondertermin hinzufügen', 'tisch-kohler' ); ?>
+            </button>
+
+            <hr style="margin:2em 0">
 
             <!-- ── Betriebsferien / Schließzeiten ────────── -->
             <h2><?php esc_html_e( 'Betriebsferien / Schließzeiten', 'tisch-kohler' ); ?></h2>
@@ -339,7 +401,7 @@ function tisch_render_settings_page(): void {
             <template id="speisekarte-item-tpl">
                 <div class="tisch-menu-item" style="display:grid;grid-template-columns:2fr 1fr 2fr 1fr auto;gap:6px;margin-bottom:6px;align-items:center">
                     <input type="text" data-item-field="name"  placeholder="<?php esc_attr_e( 'Name des Gerichts *', 'tisch-kohler' ); ?>" class="regular-text">
-                    <input type="text" data-item-field="price" placeholder="<?php esc_attr_e( 'Preis, z.B. 12,50 €', 'tisch-kohler' ); ?>" class="small-text">
+                    <input type="text" data-item-field="price" placeholder="<?php esc_attr_e( 'Preis, z.B. 12,50 €', 'tisch-kohler' ); ?>" style="width:100%">
                     <input type="text" data-item-field="desc"  placeholder="<?php esc_attr_e( 'Beschreibung (optional)', 'tisch-kohler' ); ?>" class="regular-text">
                     <input type="text" data-item-field="note"  placeholder="<?php esc_attr_e( 'Allergene (optional)', 'tisch-kohler' ); ?>" class="small-text">
                     <button type="button" class="button tisch-remove-item">&times;</button>
@@ -383,29 +445,18 @@ function tisch_render_settings_page(): void {
                     <th scope="row"><label for="tisch_osm_lat"><?php esc_html_e( 'Breitengrad (Lat)', 'tisch-kohler' ); ?></label></th>
                     <td><input type="text" id="tisch_osm_lat" name="tisch_osm_lat"
                                value="<?php echo esc_attr( get_option( 'tisch_osm_lat', '48.087400' ) ); ?>"
-                               class="small-text" placeholder="48.087400"></td>
+                               style="width:120px" placeholder="48.087400"></td>
                 </tr>
                 <tr>
                     <th scope="row"><label for="tisch_osm_lng"><?php esc_html_e( 'Längengrad (Lng)', 'tisch-kohler' ); ?></label></th>
                     <td><input type="text" id="tisch_osm_lng" name="tisch_osm_lng"
                                value="<?php echo esc_attr( get_option( 'tisch_osm_lng', '9.218900' ) ); ?>"
-                               class="small-text" placeholder="9.218900"></td>
+                               style="width:120px" placeholder="9.218900"></td>
                 </tr>
             </table>
 
             <?php submit_button( __( 'Einstellungen speichern', 'tisch-kohler' ) ); ?>
         </form>
     </div>
-    <script>
-    (function () {
-        document.querySelectorAll('.tisch-closed-cb').forEach(function (cb) {
-            var input = document.getElementById(cb.dataset.target);
-            if (!input) return;
-            cb.addEventListener('change', function () {
-                input.disabled = cb.checked;
-            });
-        });
-    }());
-    </script>
     <?php
 }

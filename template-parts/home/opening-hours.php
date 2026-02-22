@@ -17,9 +17,9 @@ $note  = get_option( 'tisch_hours_note', '' );
 $phone = get_option( 'tisch_phone', '' );
 
 // Don't render if no hours configured
-$has_hours = array_filter( array_column( $hours, 'hours' ) );
+$has_slots  = array_filter( array_map( function ( $h ) { return ! empty( $h['slots'] ); }, $hours ) );
 $has_closed = array_filter( array_column( $hours, 'closed' ) );
-if ( ! $has_hours && ! $has_closed && ! $note ) {
+if ( ! $has_slots && ! $has_closed && ! $note ) {
     return;
 }
 ?>
@@ -42,7 +42,7 @@ if ( ! $has_hours && ! $has_closed && ! $note ) {
 
         <dl class="hours-table">
             <?php foreach ( $hours as $entry ) :
-                if ( ! $entry['closed'] && empty( $entry['hours'] ) ) continue; ?>
+                if ( ! $entry['closed'] && empty( $entry['slots'] ) ) continue; ?>
                 <div class="hours-table__row<?php echo $entry['closed'] ? ' hours-table__row--closed' : ''; ?>">
                     <dt class="hours-table__day<?php echo $entry['closed'] ? ' hours-table__day--closed' : ''; ?>">
                         <?php echo esc_html( $entry['label'] ); ?>
@@ -51,13 +51,41 @@ if ( ! $has_hours && ! $has_closed && ! $note ) {
                         <?php if ( $entry['closed'] ) {
                             echo esc_html__( 'Ruhetag', 'tisch-kohler' );
                         } else {
-                            $slots = array_filter( array_map( 'trim', explode( "\n", $entry['hours'] ) ) );
-                            echo implode( '<br>', array_map( 'esc_html', $slots ) );
+                            foreach ( $entry['slots'] as $slot ) {
+                                echo esc_html( $slot['open'] ) . ' – ' . esc_html( $slot['close'] ) . ' Uhr<br>';
+                            }
                         } ?>
                     </dd>
                 </div>
             <?php endforeach; ?>
         </dl>
+
+        <?php $specials = tisch_get_upcoming_specials(); if ( $specials ) : ?>
+            <div class="hours-specials">
+                <h3 class="hours-specials__title">
+                    <?php esc_html_e( 'Besondere Öffnungszeiten', 'tisch-kohler' ); ?>
+                </h3>
+                <dl class="hours-table">
+                    <?php foreach ( $specials as $special ) :
+                        $date_label = esc_html( wp_date( get_option( 'date_format' ), strtotime( $special['date'] ) ) );
+                        $extra = $special['label'] ? ' — ' . esc_html( $special['label'] ) : '';
+                    ?>
+                    <div class="hours-table__row<?php echo $special['closed'] ? ' hours-table__row--closed' : ''; ?>">
+                        <dt class="hours-table__day"><?php echo $date_label . $extra; ?></dt>
+                        <dd class="hours-table__time">
+                            <?php if ( $special['closed'] ) : ?>
+                                <?php esc_html_e( 'Geschlossen', 'tisch-kohler' ); ?>
+                            <?php else : ?>
+                                <?php foreach ( $special['slots'] as $slot ) :
+                                    echo esc_html( $slot['open'] ) . ' – ' . esc_html( $slot['close'] ) . ' Uhr<br>';
+                                endforeach; ?>
+                            <?php endif; ?>
+                        </dd>
+                    </div>
+                    <?php endforeach; ?>
+                </dl>
+            </div>
+        <?php endif; ?>
 
         <?php if ( $note ) : ?>
             <p class="hours-note text-center"><?php echo wp_kses_post( $note ); ?></p>

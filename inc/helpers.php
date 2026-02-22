@@ -57,9 +57,10 @@ function tisch_osm_embed_url(): string {
 
 /**
  * Return the opening hours as a 7-element structured array.
- * Each element: [ 'label' => string, 'hours' => string, 'closed' => bool ]
+ * Each element: [ 'label' => string, 'closed' => bool, 'slots' => array ]
+ * where each slot is [ 'open' => 'HH:MM', 'close' => 'HH:MM' ].
  *
- * @return array<int, array{label: string, hours: string, closed: bool}>
+ * @return array<int, array{label: string, closed: bool, slots: array<int, array{open: string, close: string}>}>
  */
 function tisch_get_opening_hours(): array {
     $days = [
@@ -72,15 +73,108 @@ function tisch_get_opening_hours(): array {
         [ 'key' => 'sun', 'label' => 'Sonn- und Feiertag' ],
     ];
 
-    $result = [];
+    $schedule = (array) get_option( 'tisch_hours_schedule', [] );
+    $result   = [];
     foreach ( $days as $day ) {
+        $key      = $day['key'];
+        $day_data = isset( $schedule[ $key ] ) && is_array( $schedule[ $key ] ) ? $schedule[ $key ] : [];
         $result[] = [
             'label'  => $day['label'],
-            'hours'  => (string) get_option( 'tisch_hours_' . $day['key'], '' ),
-            'closed' => (bool) get_option( 'tisch_hours_' . $day['key'] . '_closed', '' ),
+            'closed' => ! empty( $day_data['closed'] ),
+            'slots'  => isset( $day_data['slots'] ) && is_array( $day_data['slots'] ) ? $day_data['slots'] : [],
         ];
     }
     return $result;
+}
+
+/**
+ * Sanitize the weekly hours schedule array from the admin form.
+ *
+ * @param mixed $raw Raw POST value.
+ * @return array<string, array{closed: bool, slots: array<int, array{open: string, close: string}>}>
+ */
+function tisch_sanitize_hours_schedule( $raw ): array {
+    if ( ! is_array( $raw ) ) {
+        return [];
+    }
+    $days  = [ 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' ];
+    $clean = [];
+    foreach ( $days as $day ) {
+        $day_data = isset( $raw[ $day ] ) && is_array( $raw[ $day ] ) ? $raw[ $day ] : [];
+        $closed   = ! empty( $day_data['closed'] );
+        $slots    = [];
+        if ( isset( $day_data['slots'] ) && is_array( $day_data['slots'] ) ) {
+            foreach ( array_values( $day_data['slots'] ) as $slot ) {
+                if ( ! is_array( $slot ) ) {
+                    continue;
+                }
+                $open  = sanitize_text_field( $slot['open']  ?? '' );
+                $close = sanitize_text_field( $slot['close'] ?? '' );
+                if ( preg_match( '/^\d{2}:\d{2}$/', $open ) && preg_match( '/^\d{2}:\d{2}$/', $close ) ) {
+                    $slots[] = [ 'open' => $open, 'close' => $close ];
+                }
+            }
+        }
+        $clean[ $day ] = [ 'closed' => $closed, 'slots' => $slots ];
+    }
+    return $clean;
+}
+
+/**
+ * Sanitize the Sonderöffnungszeiten (special dates) array from the admin form.
+ *
+ * @param mixed $raw Raw POST value.
+ * @return array<int, array{date: string, label: string, closed: bool, slots: array<int, array{open: string, close: string}>}>
+ */
+function tisch_sanitize_hours_special( $raw ): array {
+    if ( ! is_array( $raw ) ) {
+        return [];
+    }
+    $clean = [];
+    foreach ( array_values( $raw ) as $entry ) {
+        if ( ! is_array( $entry ) ) {
+            continue;
+        }
+        $date  = sanitize_text_field( $entry['date']  ?? '' );
+        $label = sanitize_text_field( $entry['label'] ?? '' );
+        if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $date ) ) {
+            continue;
+        }
+        $closed = ! empty( $entry['closed'] );
+        $slots  = [];
+        if ( isset( $entry['slots'] ) && is_array( $entry['slots'] ) ) {
+            foreach ( array_values( $entry['slots'] ) as $slot ) {
+                if ( ! is_array( $slot ) ) {
+                    continue;
+                }
+                $open  = sanitize_text_field( $slot['open']  ?? '' );
+                $close = sanitize_text_field( $slot['close'] ?? '' );
+                if ( preg_match( '/^\d{2}:\d{2}$/', $open ) && preg_match( '/^\d{2}:\d{2}$/', $close ) ) {
+                    $slots[] = [ 'open' => $open, 'close' => $close ];
+                }
+            }
+        }
+        $clean[] = [ 'date' => $date, 'label' => $label, 'closed' => $closed, 'slots' => $slots ];
+    }
+    return $clean;
+}
+
+/**
+ * Return Sonderöffnungszeiten entries whose date is today or in the future,
+ * sorted ascending by date.
+ *
+ * @return array<int, array{date: string, label: string, closed: bool, slots: array}>
+ */
+function tisch_get_upcoming_specials(): array {
+    $all   = (array) get_option( 'tisch_hours_special', [] );
+    $today = ( new \DateTimeImmutable( 'today', wp_timezone() ) )->format( 'Y-m-d' );
+    $upcoming = array_filter( $all, function ( $e ) use ( $today ) {
+        return isset( $e['date'] ) && $e['date'] >= $today;
+    } );
+    usort( $upcoming, function ( $a, $b ) {
+        return strcmp( $a['date'], $b['date'] );
+    } );
+    return array_values( $upcoming );
 }
 
 /**
