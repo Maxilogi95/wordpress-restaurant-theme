@@ -9,6 +9,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! get_option( 'tisch_show_tagesessen_teaser', '1' ) ) {
+    return;
+}
+
 $tagesessen_page = get_page_by_path( 'tagesessen' );
 if ( ! $tagesessen_page ) {
     return;

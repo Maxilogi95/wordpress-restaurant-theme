@@ -41,45 +41,6 @@
 		$btn.hide();
 	} );
 
-	// ── Hero image upload ─────────────────────────────────────────────────────
-	$( document ).on( 'click', '.tisch-hero-image-upload', function ( e ) {
-		e.preventDefault();
-		var $btn = $( this );
-
-		var frame = wp.media( {
-			title:    'Hero-Bild aus Mediathek wählen',
-			button:   { text: 'Dieses Bild verwenden' },
-			library:  { type: 'image' },
-			multiple: false,
-		} );
-
-		frame.on( 'select', function () {
-			var attachment = frame.state().get( 'selection' ).first().toJSON();
-			$( '#tisch_hero_image_id' ).val( attachment.id );
-
-			var preview = $btn.prev( 'img' );
-			if ( attachment.sizes && attachment.sizes.thumbnail ) {
-				var src = attachment.sizes.thumbnail.url;
-				if ( preview.length ) {
-					preview.attr( 'src', src );
-				} else {
-					$( '<img>' ).attr( { src: src, width: 150, height: 'auto' } )
-						.insertBefore( $btn );
-				}
-			}
-		} );
-
-		frame.open();
-	} );
-
-	// ── Hero image remove ────────────────────────────────────────────────────
-	$( document ).on( 'click', '.tisch-hero-image-remove', function () {
-		$( '#tisch_hero_image_id' ).val( '' );
-		$( this ).prev( 'img' ).remove();
-		$( '.tisch-hero-image-upload' ).prev( 'img' ).remove();
-		$( this ).hide();
-	} );
-
 	// ── Speisekarte nested repeater ───────────────────────────────────────────
 
 	/**

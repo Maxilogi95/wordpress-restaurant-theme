@@ -35,7 +35,13 @@ if ( ! defined( 'ABSPATH' ) ) {
         </nav>
 
         <p class="site-footer__copy">
-            &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php bloginfo( 'name' ); ?>
+            &copy; <?php echo esc_html( gmdate( 'Y' ) ); ?>
+            <span class="site-footer__copyright-text">
+                <?php
+                $copyright = (string) get_option( 'tisch_footer_copyright', '' );
+                echo esc_html( $copyright ?: get_bloginfo( 'name' ) );
+                ?>
+            </span>
         </p>
 
     </div>

@@ -64,10 +64,8 @@ function tisch_register_settings(): void {
         'tisch_osm_lat' => [ 'sanitize_callback' => 'tisch_sanitize_coordinate' ],
         'tisch_osm_lng' => [ 'sanitize_callback' => 'tisch_sanitize_coordinate' ],
 
-        // Hero
-        'tisch_hero_tagline'    => [ 'sanitize_callback' => 'sanitize_text_field' ],
-        'tisch_hero_image_id'   => [ 'sanitize_callback' => 'absint' ],
-        'tisch_welcome_text'    => [ 'sanitize_callback' => 'wp_kses_post' ],
+        // Welcome text (hero image + tagline now live in Customizer)
+        'tisch_welcome_text' => [ 'sanitize_callback' => 'wp_kses_post' ],
     ];
 
     foreach ( $options as $key => $args ) {
@@ -356,14 +354,11 @@ function tisch_render_settings_page(): void {
             <hr style="margin:2em 0">
 
             <!-- ── Startseite ─────────────────────────────── -->
-            <h2><?php esc_html_e( 'Startseite – Hero', 'tisch-kohler' ); ?></h2>
+            <h2><?php esc_html_e( 'Startseite', 'tisch-kohler' ); ?></h2>
+            <p class="description" style="margin-bottom:1em">
+                <?php esc_html_e( 'Hero-Bild und Tagline werden im Customizer unter "Tisch by Kohler › Startseite: Hero" konfiguriert.', 'tisch-kohler' ); ?>
+            </p>
             <table class="form-table" role="presentation">
-                <tr>
-                    <th scope="row"><label for="tisch_hero_tagline"><?php esc_html_e( 'Tagline (Hero)', 'tisch-kohler' ); ?></label></th>
-                    <td><input type="text" id="tisch_hero_tagline" name="tisch_hero_tagline"
-                               value="<?php echo esc_attr( get_option( 'tisch_hero_tagline', 'Herzlich willkommen' ) ); ?>"
-                               class="large-text"></td>
-                </tr>
                 <tr>
                     <th scope="row"><label for="tisch_welcome_text"><?php esc_html_e( 'Willkommenstext', 'tisch-kohler' ); ?></label></th>
                     <td>
@@ -377,28 +372,6 @@ function tisch_render_settings_page(): void {
                             ]
                         );
                         ?>
-                    </td>
-                </tr>
-                <tr>
-                    <th scope="row"><?php esc_html_e( 'Hero-Bild', 'tisch-kohler' ); ?></th>
-                    <td>
-                        <input type="hidden" id="tisch_hero_image_id" name="tisch_hero_image_id"
-                               value="<?php echo esc_attr( get_option( 'tisch_hero_image_id' ) ); ?>">
-                        <?php
-                        $hero_id = (int) get_option( 'tisch_hero_image_id' );
-                        if ( $hero_id ) :
-                            echo wp_get_attachment_image( $hero_id, 'thumbnail' );
-                        endif;
-                        ?>
-                        <button type="button" class="button button-secondary tisch-hero-image-upload" style="display:block;margin-top:6px">
-                            <?php esc_html_e( 'Bild aus Mediathek wählen', 'tisch-kohler' ); ?>
-                        </button>
-                        <?php if ( get_option( 'tisch_hero_image_id' ) ) : ?>
-                            <button type="button" class="button tisch-hero-image-remove"
-                                    style="display:block;margin-top:6px">
-                                <?php esc_html_e( 'Bild entfernen', 'tisch-kohler' ); ?>
-                            </button>
-                        <?php endif; ?>
                     </td>
                 </tr>
             </table>

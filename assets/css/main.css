@@ -277,19 +277,22 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── 5. Site Header ────────────────────────────────────────── */
 .site-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 100;
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border-light);
-  box-shadow: var(--shadow-sm);
   min-height: var(--header-height);
+}
+
+.site-header.is-sticky {
+  position: sticky;
+  top: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .site-header__inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: var(--space-4);
   min-height: var(--header-height);
 }
@@ -333,6 +336,7 @@ h1, h2, h3, h4, h5, h6 {
 .site-nav {
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
 /* Hamburger toggle */
@@ -1220,4 +1224,85 @@ h1, h2, h3, h4, h5, h6 {
 
 .osm-map__iframe--hidden {
   display: none;
+}
+
+/* ── 25. Header Actions (phone + CTA) ──────────────────── */
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.site-header__phone {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.site-header__phone:hover {
+  color: var(--color-primary);
+}
+@media (max-width: 767px) {
+  .site-header__phone {
+    display: none !important;
+  }
+}
+
+/* ── 26. Button small variant ──────────────────────────── */
+.btn--sm {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+}
+
+/* ── 27. Hero subheadline ──────────────────────────────── */
+.hero__subheadline {
+  font-size: var(--text-lg);
+  color: var(--color-text-inverse);
+  opacity: 0.9;
+  margin-top: var(--space-2);
+}
+
+/* ── 28. Header Layout Variants ────────────────────────── */
+
+/* Left: cancel auto-margin; items cluster at the left edge */
+.site-header.layout-left .site-nav {
+  margin-left: 0;
+}
+
+/* Centered: 3-column grid — brand left, nav center, actions right */
+.site-header.layout-centered .site-header__inner {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+}
+.site-header.layout-centered .site-header__brand {
+  justify-self: start;
+}
+.site-header.layout-centered .site-nav {
+  margin-left: 0;
+  justify-self: center;
+}
+.site-header.layout-centered .site-header__actions {
+  justify-self: end;
+}
+
+/* Split Right: nav+actions left, brand pushed to the right */
+.site-header.layout-split-right .site-nav {
+  order: -1;          /* nav first in visual order */
+  margin-left: 0;
+  margin-right: auto; /* pushes brand to the far right */
+}
+.site-header.layout-split-right .site-header__actions {
+  order: 0;
+}
+.site-header.layout-split-right .site-header__brand {
+  order: 1;           /* brand last = rightmost */
+}
+
+/* Right: all items clustered at the right edge */
+.site-header.layout-right .site-header__inner {
+  justify-content: flex-end;
+}
+.site-header.layout-right .site-nav {
+  margin-left: 0;
 }

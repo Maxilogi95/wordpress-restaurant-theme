@@ -136,6 +136,52 @@ function tisch_output_color_overrides(): void {
 add_action( 'wp_head', 'tisch_output_color_overrides', 99 );
 
 /**
+ * Output inline <style> for design-token CSS variables (typography, layout).
+ * Values come from a hardcoded whitelist — map values (not raw user input) are echoed.
+ * Hooked to wp_head at priority 99.
+ */
+function tisch_output_design_tokens(): void {
+    $font_heading_map = [
+        'playfair' => "'Playfair Display',Georgia,'Times New Roman',serif",
+        'georgia'  => "Georgia,'Times New Roman',serif",
+    ];
+    $font_body_map = [
+        'lato'   => "'Lato',system-ui,-apple-system,sans-serif",
+        'system' => "system-ui,-apple-system,sans-serif",
+    ];
+
+    $heading_key    = (string) get_option( 'tisch_font_heading', 'playfair' );
+    $body_key       = (string) get_option( 'tisch_font_body', 'lato' );
+    $container_val  = (int) get_option( 'tisch_container_width', 1200 );
+    $radius_val     = (int) get_option( 'tisch_border_radius', 8 );
+
+    // Clamp to safe ranges
+    $container_val = max( 900, min( 1400, $container_val ) );
+    $radius_val    = max( 0, min( 32, $radius_val ) );
+
+    $heading_stack = array_key_exists( $heading_key, $font_heading_map )
+        ? $font_heading_map[ $heading_key ]
+        : $font_heading_map['playfair'];
+    $body_stack    = array_key_exists( $body_key, $font_body_map )
+        ? $font_body_map[ $body_key ]
+        : $font_body_map['lato'];
+
+    $radius_sm = (int) round( $radius_val / 2 );
+    $radius_lg = min( $radius_val * 2, 32 );
+
+    $css = '--container-max:' . $container_val . 'px;'
+        . '--radius-sm:' . $radius_sm . 'px;'
+        . '--radius-md:' . $radius_val . 'px;'
+        . '--radius-lg:' . $radius_lg . 'px;'
+        . '--font-heading:' . $heading_stack . ';' // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        . '--font-body:' . $body_stack . ';';      // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+    echo '<style id="tisch-design-tokens">:root{' . $css . '}</style>' . "\n";
+}
+add_action( 'wp_head', 'tisch_output_design_tokens', 99 );
+
+/**
  * Check whether the Speisekarte PDF is still valid.
  * Returns false if no PDF is set or the valid-until date has passed.
  */

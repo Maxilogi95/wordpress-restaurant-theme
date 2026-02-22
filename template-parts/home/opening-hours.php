@@ -8,6 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! get_option( 'tisch_show_opening_hours', '1' ) ) {
+    return;
+}
+
 $hours = tisch_get_opening_hours();
 $note  = get_option( 'tisch_hours_note', '' );
 $phone = get_option( 'tisch_phone', '' );

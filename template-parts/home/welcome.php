@@ -8,6 +8,10 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
+if ( ! get_option( 'tisch_show_welcome', '1' ) ) {
+    return;
+}
+
 $welcome_text = get_option( 'tisch_welcome_text', '' );
 
 if ( empty( $welcome_text ) ) {

@@ -25,7 +25,13 @@ if ( ! defined( 'ABSPATH' ) ) {
     <?php esc_html_e( 'Zum Hauptinhalt springen', 'tisch-kohler' ); ?>
 </a>
 
-<header class="site-header" role="banner">
+<?php
+$layout        = (string) get_option( 'tisch_header_layout', 'split' );
+$valid_layouts = [ 'left', 'split', 'centered', 'split-right', 'right' ];
+$layout        = in_array( $layout, $valid_layouts, true ) ? $layout : 'split';
+$sticky_cls    = get_option( 'tisch_sticky_header' ) ? ' is-sticky' : '';
+?>
+<header class="site-header layout-<?php echo esc_attr( $layout ); ?><?php echo $sticky_cls; ?>" role="banner">
     <div class="container site-header__inner">
 
         <div class="site-header__brand">
@@ -64,6 +70,28 @@ if ( ! defined( 'ABSPATH' ) ) {
             ] );
             ?>
         </nav>
+
+        <div class="site-header__actions">
+            <?php
+            $phone          = (string) get_option( 'tisch_phone', '' );
+            $show_phone     = (bool) get_option( 'tisch_header_show_phone', '' );
+            $cta_text       = (string) get_option( 'tisch_header_cta_text', '' );
+            $cta_url        = (string) get_option( 'tisch_header_cta_url', '' );
+
+            if ( $phone ) : ?>
+                <a href="tel:<?php echo esc_attr( tisch_phone_link() ); ?>"
+                   class="site-header__phone"
+                   <?php echo $show_phone ? '' : 'style="display:none"'; ?>>
+                    <?php echo esc_html( $phone ); ?>
+                </a>
+            <?php endif; ?>
+
+            <a href="<?php echo esc_url( $cta_url ?: '#' ); ?>"
+               class="site-header__cta btn btn--primary btn--sm"
+               <?php echo ( $cta_text && $cta_url ) ? '' : 'style="display:none"'; ?>>
+                <?php echo esc_html( $cta_text ); ?>
+            </a>
+        </div>
 
     </div>
 </header>
